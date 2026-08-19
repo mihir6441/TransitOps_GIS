@@ -1,0 +1,1 @@
+/// Abstract repositories. UI and use cases depend on these, never on ArcGIS types.
