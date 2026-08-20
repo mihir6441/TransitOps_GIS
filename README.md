@@ -95,6 +95,7 @@ flutter run --dart-define=ARCGIS_API_KEY=YOUR_KEY
 | `API_BASE_URL` | Backend base URL |
 | `ARCGIS_API_KEY` | Esri API key |
 | `ARCGIS_PORTAL_URL` | Portal URL, default `https://www.arcgis.com` |
+| `ARCGIS_MAPS_USE_TEXTURE` | `true` — use Esri texture rendering on Android (avoids a blank hybrid platform view) |
 
 ## Running the App
 

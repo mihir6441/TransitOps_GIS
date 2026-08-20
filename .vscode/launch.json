@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TransitOps GIS",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--no-enable-impeller",
+        "--dart-define-from-file=dart_defines.json"
+      ]
+    }
+  ]
+}

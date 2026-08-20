@@ -2,5 +2,6 @@
   "APP_ENV": "development",
   "API_BASE_URL": "https://api.example.invalid/v1",
   "ARCGIS_API_KEY": "PASTE_YOUR_ARCGIS_API_KEY_HERE",
-  "ARCGIS_PORTAL_URL": "https://www.arcgis.com"
+  "ARCGIS_PORTAL_URL": "https://www.arcgis.com",
+  "ARCGIS_MAPS_USE_TEXTURE": "true"
 }

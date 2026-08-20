@@ -65,7 +65,16 @@ class LiveMapCubit extends Cubit<LiveMapState> {
     try {
       await _mapSession.attachBasemap();
     } catch (_) {
-      // Basemap tile failures should not crash the Live Map chrome.
+      emit(
+        const LiveMapState(
+          status: LiveMapStatus.error,
+          message:
+              'The ArcGIS basemap could not load. Check the API key basemap '
+              'privilege and start the app with '
+              '--dart-define-from-file=dart_defines.json.',
+        ),
+      );
+      return;
     }
     await _loadLayersIfReady();
   }

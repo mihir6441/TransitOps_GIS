@@ -8,10 +8,10 @@ import 'package:transitops_gis/domain/entities/gis_enums.dart';
 import 'package:transitops_gis/domain/entities/selected_gis_feature.dart';
 
 class ArcGISMapSession {
-  ArcGISMapSession(this._layerService, [this._mapFactory]);
+  ArcGISMapSession(this._layerService, this._mapFactory);
 
   final ArcGISOperationalLayerService _layerService;
-  final ArcGISMapFactory? _mapFactory;
+  final ArcGISMapFactory _mapFactory;
 
   ArcGISMapViewController? _controller;
   FeatureCollectionLayer? _operationalLayer;
@@ -25,16 +25,26 @@ class ArcGISMapSession {
 
   Future<void> attachBasemap() async {
     final controller = _controller;
-    final factory = _mapFactory;
-    if (controller == null || factory == null) {
+    if (controller == null) {
       return;
     }
-    controller.arcGISMap ??= factory.createBasemapMap();
+    controller.arcGISMap ??= _mapFactory.createBasemapMap();
     final map = controller.arcGISMap;
-    if (map != null) {
-      await map.load();
+    if (map == null) {
+      return;
     }
-    await recenter();
+    await map.load();
+    if (map.loadStatus == LoadStatus.failedToLoad) {
+      throw StateError(map.loadError?.message ?? 'Basemap failed to load');
+    }
+    await controller.setViewpointCenter(
+      ArcGISPoint(
+        x: MockGisDataSource.operationsCenter.longitude,
+        y: MockGisDataSource.operationsCenter.latitude,
+        spatialReference: SpatialReference.wgs84,
+      ),
+      scale: MockGisDataSource.initialMapScale,
+    );
   }
 
   Future<void> loadOperationalLayers(GisCatalog catalog) async {
