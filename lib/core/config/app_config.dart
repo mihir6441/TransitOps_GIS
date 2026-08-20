@@ -38,7 +38,8 @@ class AppConfig {
   final AppEnvironment environment;
   final String apiBaseUrl;
 
-  /// Placeholder for Phase 2. Empty until provided via `--dart-define=ARCGIS_API_KEY=...`.
+  /// Empty until provided via `--dart-define=ARCGIS_API_KEY=...`
+  /// or `--dart-define-from-file=dart_defines.json`.
   final String arcgisApiKey;
   final String arcgisPortalUrl;
 

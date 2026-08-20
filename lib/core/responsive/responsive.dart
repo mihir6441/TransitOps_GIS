@@ -12,6 +12,17 @@ class Responsive {
     return MediaQuery.sizeOf(context).width >= Breakpoints.medium;
   }
 
+  static int dashboardMetricColumns(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width >= Breakpoints.medium) {
+      return 4;
+    }
+    if (width >= Breakpoints.compact) {
+      return 2;
+    }
+    return 1;
+  }
+
   static int gridColumns(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     if (width >= Breakpoints.expanded) {

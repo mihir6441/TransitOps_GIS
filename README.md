@@ -2,7 +2,7 @@
 
 Transportation & Field Operations — a Flutter demonstration application for enterprise transit GIS workflows using Esri ArcGIS.
 
-This repository is being built in phases. **Phase 1 (current)** establishes architecture, theming, navigation, and configuration. ArcGIS Maps SDK integration starts in Phase 2.
+This repository is being built in phases. **Phase 4 (current)** is the Live GIS map with ArcGIS feature layers.
 
 ## Overview
 
@@ -10,9 +10,9 @@ TransitOps GIS is a professional field-operations style mobile app (Android and 
 
 - Flutter Clean Architecture
 - BLoC / Cubit state management
+- ArcGIS Maps SDK for Flutter
 - GIS-ready configuration without hardcoded secrets
 - Responsive phone / tablet navigation
-- A maintainable path to ArcGIS Maps SDK for Flutter
 
 ## Architecture
 
@@ -21,21 +21,23 @@ Presentation (widgets, Cubits)
         ↓
 Domain (entities, repository contracts, use cases)
         ↓
-Data (datasources, models, repository implementations)
+Data (datasources, models, ArcGIS map factory)
         ↓
-Core (config, errors, network, location, theme, responsive)
+Core (config, ArcGIS runtime, errors, network, location, theme)
 ```
 
-Dependencies point inward. Widgets do not contain business logic. GIS SDKs will be isolated behind repository and service abstractions so mock data sources can be replaced with ArcGIS Feature Services later.
+ArcGIS SDK types stay in `core/gis` and `data/gis`. Widgets talk to `LiveMapCubit` and a thin `ArcGISMapHost`.
 
 ```mermaid
 flowchart TD
-  UI[Presentation / Cubits] --> UC[Use cases]
-  UC --> REPO[Domain repositories]
-  REPO --> DATA[Data sources]
-  DATA --> MOCK[Mock GIS source]
-  DATA --> AGOL[ArcGIS Feature Service later]
-  UI --> CORE[Core config / location / network]
+  UI[LiveMapPage] --> CUBIT[LiveMapCubit]
+  CUBIT --> CFG[ArcGISConfig]
+  CUBIT --> RT[ArcGISRuntimeService]
+  RT --> GW[ArcGISRuntimeGateway]
+  GW --> ENV[ArcGISEnvironment.apiKey]
+  UI --> HOST[ArcGISMapHost]
+  HOST --> FACTORY[ArcGISMapFactory]
+  FACTORY --> MAP[ArcGISMap + Basemap]
 ```
 
 ## Technology Stack
@@ -45,51 +47,62 @@ flowchart TD
 - GetIt
 - Dio
 - Equatable
-- ArcGIS Maps SDK for Flutter — **not added yet (Phase 2)**
+- **ArcGIS Maps SDK for Flutter `200.8.0+4672`**
 
-## Project Structure
+### Why 200.8 instead of 300.1
 
-```
-lib/
-├── core/           # config, errors, network, location contract, theme, responsive
-├── data/           # datasources, models, repository implementations
-├── domain/         # entities, repository contracts, use cases
-├── presentation/   # dashboard, map, vehicles, routes, incidents, settings, shell
-└── main.dart
-```
+The current pub.dev latest is `300.1`, which requires **Flutter 3.44.1 / Dart 3.12.1**. This project is on Flutter 3.35.5. Esri documents 200.8 as compatible with Flutter 3.35.x. After you upgrade Flutter, we can move to 300.x without changing the config/service architecture.
+
+## ArcGIS Integration
+
+- `ArcGISConfig` holds `apiKey`, `portalUrl`, and `environment`
+- `ArcGISRuntimeService` applies the key to `ArcGISEnvironment` at startup
+- `ArcGISMapFactory` creates an `ArcGISMap` with a Streets basemap
+- Live Map shows a real `ArcGISMapView` only when a key is present
+- Without a key, the app stays usable and explains how to configure one
 
 ## Setup
 
 ```bash
 flutter pub get
+dart run arcgis_maps install
 ```
+
+`dart run arcgis_maps install` places native cores under `arcgis_maps_core/` (gitignored). The iOS Podfile points CocoaPods at those local podspecs (`Runtimecore`, `arcgis_maps_ffi`).
 
 ## ArcGIS API Key Configuration
 
-Phase 1 does not initialize the ArcGIS SDK. Configuration placeholders already exist:
+**Do not put the key in source.** Provide it at run time.
 
-| Dart define | Purpose |
-| --- | --- |
-| `APP_ENV` | `development` / `staging` / `production` |
-| `API_BASE_URL` | Backend base URL |
-| `ARCGIS_API_KEY` | Esri API key (leave empty until Phase 2) |
-| `ARCGIS_PORTAL_URL` | Portal URL, default `https://www.arcgis.com` |
+1. Create an API key in [Esri's developer portal](https://developers.arcgis.com/) with basemap privileges.
+2. Copy `dart_defines.example.json` to `dart_defines.json` (gitignored).
+3. Paste the key into `ARCGIS_API_KEY`.
+4. Run:
 
-Example:
+```bash
+flutter run --no-enable-impeller --dart-define-from-file=dart_defines.json
+```
+
+Equivalent:
 
 ```bash
 flutter run --dart-define=ARCGIS_API_KEY=YOUR_KEY
 ```
 
-Never commit real keys. See `.env.example`.
+| Dart define | Purpose |
+| --- | --- |
+| `APP_ENV` | `development` / `staging` / `production` |
+| `API_BASE_URL` | Backend base URL |
+| `ARCGIS_API_KEY` | Esri API key |
+| `ARCGIS_PORTAL_URL` | Portal URL, default `https://www.arcgis.com` |
 
 ## Running the App
 
 ```bash
-flutter run
+flutter run --no-enable-impeller
 ```
 
-Phone layout uses a bottom navigation bar. Width ≥ 840 logical pixels uses a navigation rail (tablet / landscape).
+Phone layout uses a bottom navigation bar. Width ≥ 840 logical pixels uses a navigation rail.
 
 ## Testing
 
@@ -98,20 +111,28 @@ flutter test
 flutter analyze
 ```
 
+ArcGIS runtime is mocked in tests. Widget tests do not require an Esri account.
+
 ## Android Setup
 
-Standard Flutter Android embedding. Application id: `com.transport.TransitOpsGIS.transitops_gis`.
+- `minSdk` 28
+- `compileSdk` 36
+- NDK `27.0.12077973`
+- ABIs: `arm64-v8a`, `x86_64` (32-bit is not supported by the SDK)
+- Permissions: `INTERNET`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`
 
-Location permissions will be added in the device-location phase.
+Application id: `com.transport.TransitOpsGIS.transitops_gis`.
 
 ## iOS Setup
 
-Display name: TransitOps GIS. Location usage descriptions will be added in the device-location phase.
+- Deployment target **17.0**
+- Location usage descriptions in `Info.plist`
+- `platform :ios, '17.0'` in the Podfile
 
 ## Features (planned)
 
-Dashboard → Live GIS map → vehicles / stops / routes / incidents → spatial query → routing → incident reporting → feature editing → offline-ready sync.
+Dashboard → Live GIS map (basemap in Phase 2) → vehicles / stops / routes / incidents → spatial query → routing → incident reporting → feature editing → offline-ready sync.
 
 ## Future Production Architecture
 
-Replace mock GIS datasources with ArcGIS Feature Services, add authenticated portal access, offline map areas, and a synchronization queue. Phase 1 only provides the seams.
+Replace mock GIS datasources with ArcGIS Feature Services, add authenticated portal access, offline map areas, and a synchronization queue.

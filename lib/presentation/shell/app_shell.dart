@@ -15,15 +15,6 @@ import 'package:transitops_gis/presentation/vehicles/pages/vehicles_page.dart';
 class AppShell extends StatelessWidget {
   const AppShell({super.key});
 
-  static const _pages = <AppDestination, Widget>{
-    AppDestination.dashboard: DashboardPage(),
-    AppDestination.liveMap: LiveMapPage(),
-    AppDestination.vehicles: VehiclesPage(),
-    AppDestination.routes: RoutesPage(),
-    AppDestination.incidents: IncidentsPage(),
-    AppDestination.settings: SettingsPage(),
-  };
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<NavigationCubit, AppDestination>(
@@ -33,12 +24,20 @@ class AppShell extends StatelessWidget {
         );
         final index = selectedIndex < 0 ? 0 : selectedIndex;
         final isWide = Responsive.isWide(context);
-        final body = IndexedStack(
-          index: index,
-          children: DestinationConfig.items
-              .map((item) => _pages[item.destination]!)
-              .toList(growable: false),
-        );
+        // ArcGISMapView cannot be created offstage (IndexedStack). Mount it
+        // only while Live Map is selected so the native texture has a size.
+        final body = destination == AppDestination.liveMap
+            ? const LiveMapPage()
+            : IndexedStack(
+                index: index > 1 ? index - 1 : index,
+                children: const [
+                  DashboardPage(),
+                  VehiclesPage(),
+                  RoutesPage(),
+                  IncidentsPage(),
+                  SettingsPage(),
+                ],
+              );
 
         if (isWide) {
           return Scaffold(

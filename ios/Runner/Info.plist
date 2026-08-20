@@ -41,6 +41,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TransitOps GIS uses your location to display the live operations map and nearby field assets.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>TransitOps GIS uses your location to display the live operations map and nearby field assets.</string>
+	<key>FLTEnableImpeller</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

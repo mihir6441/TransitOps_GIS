@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:transitops_gis/core/config/app_config.dart';
 import 'package:transitops_gis/core/config/injection.dart';
 import 'package:transitops_gis/core/constants/app_strings.dart';
+import 'package:transitops_gis/core/gis/arcgis_runtime_service.dart';
 import 'package:transitops_gis/presentation/shared/widgets/app_card.dart';
 import 'package:transitops_gis/presentation/shared/widgets/status_badge.dart';
 
@@ -53,6 +54,20 @@ class SettingsPage extends StatelessWidget {
                     tone: config.hasArcgisApiKey
                         ? StatusTone.success
                         : StatusTone.warning,
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              Row(
+                children: [
+                  const Expanded(child: Text('ArcGIS runtime')),
+                  StatusBadge(
+                    label: sl<ArcGISRuntimeService>().isReady
+                        ? 'Initialized'
+                        : 'Idle',
+                    tone: sl<ArcGISRuntimeService>().isReady
+                        ? StatusTone.success
+                        : StatusTone.neutral,
                   ),
                 ],
               ),
